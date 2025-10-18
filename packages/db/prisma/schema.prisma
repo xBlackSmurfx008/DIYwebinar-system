@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  members     OrganizationMember[]
+  events      Event[]
+  auditLogs   AuditLog[]
+}
+
+model OrganizationMember {
+  id              String   @id @default(cuid())
+  userEmail       String
+  role            MemberRole
+  createdAt       DateTime @default(now())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  EDITOR
+  ANALYST
+}
+
+model Event {
+  id            String   @id @default(cuid())
+  orgId         String
+  organization  Organization @relation(fields: [orgId], references: [id])
+  title         String
+  description   String
+  format        EventFormat
+  startAt       DateTime
+  endAt         DateTime
+  status        EventStatus @default(DRAFT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tickets       TicketType[]
+  areas         EventArea[]
+  streamKeys    StreamKey[]
+  schedules     ScheduleSegment[]
+}
+
+enum EventFormat {
+  WEBINAR
+  VIRTUAL
+  HYBRID
+  ONSITE
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model EventArea {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  kind      AreaKind
+  name      String
+  isEnabled Boolean  @default(true)
+  isPublic  Boolean  @default(true)
+  order     Int      @default(0)
+}
+
+enum AreaKind {
+  RECEPTION
+  STAGE
+  SESSIONS
+  NETWORKING
+  EXPO
+  REPLAY
+  APP
+  CUSTOM
+}
+
+model TicketType {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id])
+  name          String
+  description   String?
+  priceCents    Int      @default(0)
+  currency      String   @default("USD")
+  totalQuantity Int
+  availableFrom DateTime?
+  availableTo   DateTime?
+  isPrivate     Boolean  @default(false)
+  waitlistSize  Int? 
+}
+
+model Registration {
+  id              String   @id @default(cuid())
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id])
+  ticketTypeId    String
+  ticketType      TicketType @relation(fields: [ticketTypeId], references: [id])
+  email           String
+  fullName        String?
+  createdAt       DateTime @default(now())
+  magicLinkCode   String?  @unique
+  checkedInAt     DateTime?
+}
+
+model ScheduleSegment {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id])
+  title         String
+  description   String?
+  areaKind      AreaKind
+  startsAt      DateTime
+  endsAt        DateTime
+  ticketFilter  String? // JSON filter by ticket types
+}
+
+model StreamKey {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id])
+  label       String   @default("primary")
+  key         String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  actorEmail     String
+  action         String
+  data           Json?
+  createdAt      DateTime @default(now())
+}
