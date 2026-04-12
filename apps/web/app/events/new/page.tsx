@@ -14,7 +14,17 @@ export default function NewEventPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, format, startAt, endAt })
     });
-    if (res.ok) alert('Event created'); else alert('Failed');
+    if (!res.ok) {
+      alert('Failed to create event');
+      return;
+    }
+    const data = await res.json();
+    const key = data.streamKey?.key;
+    alert(
+      key
+        ? `Event created. OBS stream key (copy into OBS): ${key}`
+        : 'Event created'
+    );
   };
 
   return (

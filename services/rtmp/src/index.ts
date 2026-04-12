@@ -1,8 +1,8 @@
-import 'dotenv/config';
-import NodeMediaServer from 'node-media-server';
-import { getPrisma } from '@platform/db';
+import "dotenv/config";
+import NodeMediaServer from "node-media-server";
+import { PrismaClient } from "@prisma/client";
 
-const prisma = getPrisma();
+const prisma = new PrismaClient();
 
 const rtmpPort = parseInt(process.env.RTMP_PORT || '1935', 10);
 const httpPort = parseInt(process.env.RTMP_HTTP_PORT || '8000', 10);
@@ -34,7 +34,7 @@ const nms = new NodeMediaServer({
   }
 });
 
-nms.on('prePublish', async (id, StreamPath, args) => {
+nms.on("prePublish", async (id: string, StreamPath: string) => {
   try {
     const streamKey = StreamPath.split('/').pop();
     if (!streamKey) {
@@ -57,7 +57,7 @@ nms.on('prePublish', async (id, StreamPath, args) => {
   }
 });
 
-nms.on('donePublish', async (id, StreamPath, args) => {
+nms.on("donePublish", async (_id: string, StreamPath: string) => {
   const streamKey = StreamPath.split('/').pop();
   console.log(`[RTMP] Stream ended for key: ${streamKey}`);
 });

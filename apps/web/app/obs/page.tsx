@@ -21,7 +21,10 @@ export default function OBSPage() {
         <li>Audio: AAC 128 Kbps</li>
       </ul>
       <h3>Playback (HLS)</h3>
-      <p>HLS: http://{host}:{httpPort}/live/&lt;streamKey&gt;.m3u8</p>
+      <p>
+        HLS playlist: http://{host}:{httpPort}/live/&lt;streamKey&gt;/index.m3u8
+        (node-media-server writes segments under a folder per stream.)
+      </p>
     </div>
   );
 }
