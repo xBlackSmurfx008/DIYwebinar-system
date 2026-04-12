@@ -1,4 +1,5 @@
-version: "3.8"
+# Use host-published Postgres port so app containers can reach the DB when
+# direct container-to-container routing is blocked (some sandboxes/VMs).
 
 services:
   db:
@@ -11,18 +12,26 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d events"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
 
   rtmp:
     build:
       context: .
       dockerfile: Dockerfile.rtmp
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/events?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/events?schema=public
       RTMP_PORT: 1935
       RTMP_HTTP_PORT: 8000
       FFMPEG_PATH: /usr/bin/ffmpeg
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "1935:1935"
       - "8000:8000"
@@ -32,14 +41,18 @@ services:
       context: .
       dockerfile: Dockerfile.web
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/events?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/events?schema=public
       RTMP_PUBLIC_HOST: ${RTMP_PUBLIC_HOST:-localhost}
       RTMP_PORT: 1935
       RTMP_HTTP_PORT: 8000
       DEMO_ORG_ID: demo-org
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
-      - db
-      - rtmp
+      db:
+        condition: service_healthy
+      rtmp:
+        condition: service_started
     ports:
       - "3000:3000"
 

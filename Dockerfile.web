@@ -1,6 +1,9 @@
 FROM node:20-slim AS builder
 WORKDIR /repo
 
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/
 COPY packages/db/package.json packages/db/
@@ -13,7 +16,12 @@ COPY packages/db packages/db
 COPY apps/web apps/web
 
 ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/events?schema=public"
-RUN npm run db:generate
+RUN rm -rf node_modules/.prisma \
+  && rm -f node_modules/@prisma/engines/schema-engine-* \
+          node_modules/@prisma/engines/libquery_engine-*.so.node \
+          node_modules/prisma/libquery_engine-*.so.node \
+  && npm run db:generate
+
 RUN npm run build -w apps/web
 
 FROM node:20-slim
