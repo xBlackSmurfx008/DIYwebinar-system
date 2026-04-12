@@ -1,4 +1,5 @@
-version: '3.8'
+version: "3.8"
+
 services:
   db:
     image: postgres:15
@@ -13,7 +14,8 @@ services:
 
   rtmp:
     build:
-      context: ./services/rtmp
+      context: .
+      dockerfile: Dockerfile.rtmp
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/events?schema=public
       RTMP_PORT: 1935
@@ -27,13 +29,14 @@ services:
 
   web:
     build:
-      context: ./apps/web
+      context: .
+      dockerfile: Dockerfile.web
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/events?schema=public
-      RTMP_HOST: localhost
+      RTMP_PUBLIC_HOST: ${RTMP_PUBLIC_HOST:-localhost}
       RTMP_PORT: 1935
       RTMP_HTTP_PORT: 8000
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DEMO_ORG_ID: demo-org
     depends_on:
       - db
       - rtmp

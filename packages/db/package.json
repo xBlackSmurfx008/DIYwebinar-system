@@ -8,9 +8,11 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "generate": "prisma generate",
-    "migrate": "prisma migrate dev --name init",
+    "migrate": "prisma migrate dev",
     "build": "tsc -p tsconfig.json",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "seed": "tsx prisma/seed.ts",
+    "migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
@@ -18,6 +20,10 @@
   },
   "devDependencies": {
     "prisma": "^5.20.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.6.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

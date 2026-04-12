@@ -17,7 +17,6 @@ coverage/
 
 # Prisma
 prisma/*.db
-prisma/migrations/
 
 # Logs
 *.log

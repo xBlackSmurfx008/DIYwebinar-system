@@ -1,12 +1,12 @@
-import 'dotenv/config';
-import NodeMediaServer from 'node-media-server';
-import { getPrisma } from '@platform/db';
+import "dotenv/config";
+import NodeMediaServer from "node-media-server";
+import { PrismaClient } from "@prisma/client";
 
-const prisma = getPrisma();
+const prisma = new PrismaClient({ log: ["error", "warn"] });
 
-const rtmpPort = parseInt(process.env.RTMP_PORT || '1935', 10);
-const httpPort = parseInt(process.env.RTMP_HTTP_PORT || '8000', 10);
-const ffmpegPath = process.env.FFMPEG_PATH || '/usr/bin/ffmpeg';
+const rtmpPort = parseInt(process.env.RTMP_PORT || "1935", 10);
+const httpPort = parseInt(process.env.RTMP_HTTP_PORT || "8000", 10);
+const ffmpegPath = process.env.FFMPEG_PATH || "/usr/bin/ffmpeg";
 
 const nms = new NodeMediaServer({
   logType: 2,
@@ -19,46 +19,50 @@ const nms = new NodeMediaServer({
   },
   http: {
     port: httpPort,
-    allow_origin: '*',
-    mediaroot: './media',
+    allow_origin: "*",
+    mediaroot: "./media",
   },
   trans: {
     ffmpeg: ffmpegPath,
     tasks: [
       {
-        app: 'live',
+        app: "live",
         hls: true,
-        hlsFlags: '[hls_time=2:hls_list_size=6:hls_flags=delete_segments+append_list]'
-      }
-    ]
-  }
+        hlsFlags:
+          "[hls_time=2:hls_list_size=6:hls_flags=delete_segments+append_list]",
+      },
+    ],
+  },
 });
 
-nms.on('prePublish', async (id, StreamPath, args) => {
+nms.on("prePublish", async (id: string, StreamPath: string) => {
   try {
-    const streamKey = StreamPath.split('/').pop();
+    const streamKey = StreamPath.split("/").pop();
     if (!streamKey) {
-      // reject publish
-      // @ts-ignore
+      // @ts-ignore node-media-server session API
       nms.getSession(id)?.reject();
       return;
     }
-    const found = await prisma.streamKey.findUnique({ where: { key: streamKey } });
+    const found = await prisma.streamKey.findUnique({
+      where: { key: streamKey },
+    });
     if (!found || !found.isActive) {
-      // @ts-ignore
+      // @ts-ignore node-media-server session API
       nms.getSession(id)?.reject();
       return;
     }
-    console.log(`[RTMP] Authorized stream key '${streamKey}' for event ${found.eventId}`);
+    console.log(
+      `[RTMP] Authorized stream key '${streamKey}' for event ${found.eventId}`
+    );
   } catch (err) {
-    console.error('prePublish error', err);
-    // @ts-ignore
+    console.error("prePublish error", err);
+    // @ts-ignore node-media-server session API
     nms.getSession(id)?.reject();
   }
 });
 
-nms.on('donePublish', async (id, StreamPath, args) => {
-  const streamKey = StreamPath.split('/').pop();
+nms.on("donePublish", async (_id: string, StreamPath: string) => {
+  const streamKey = StreamPath.split("/").pop();
   console.log(`[RTMP] Stream ended for key: ${streamKey}`);
 });
 

@@ -50,6 +50,7 @@ model Event {
   areas         EventArea[]
   streamKeys    StreamKey[]
   schedules     ScheduleSegment[]
+  registrations Registration[]
 }
 
 enum EventFormat {
@@ -99,7 +100,8 @@ model TicketType {
   availableFrom DateTime?
   availableTo   DateTime?
   isPrivate     Boolean  @default(false)
-  waitlistSize  Int? 
+  waitlistSize  Int?
+  registrations Registration[]
 }
 
 model Registration {
