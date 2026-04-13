@@ -7,6 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String?
+  name          String?
+  role          UserRole @default(AUDIENCE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  chatMessages  ChatMessage[]
+}
+
+enum UserRole {
+  ADMIN
+  SPEAKER
+  AUDIENCE
+}
+
 model Organization {
   id          String   @id @default(cuid())
   name        String
@@ -51,6 +68,7 @@ model Event {
   streamKeys    StreamKey[]
   schedules     ScheduleSegment[]
   registrations Registration[]
+  chatMessages  ChatMessage[]
 }
 
 enum EventFormat {
@@ -147,4 +165,20 @@ model AuditLog {
   action         String
   data           Json?
   createdAt      DateTime @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  type      MessageType @default(CHAT)
+  createdAt DateTime @default(now())
+}
+
+enum MessageType {
+  CHAT
+  QUESTION
 }

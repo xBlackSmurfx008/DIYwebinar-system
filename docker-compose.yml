@@ -10,33 +10,45 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
 
   rtmp:
     build:
-      context: ./services/rtmp
+      context: .
+      dockerfile: services/rtmp/Dockerfile
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/events?schema=public
       RTMP_PORT: 1935
       RTMP_HTTP_PORT: 8000
       FFMPEG_PATH: /usr/bin/ffmpeg
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "1935:1935"
       - "8000:8000"
 
   web:
     build:
-      context: ./apps/web
+      context: .
+      dockerfile: apps/web/Dockerfile
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/events?schema=public
-      RTMP_HOST: localhost
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-to-a-random-string}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      RTMP_HOST: ${RTMP_HOST:-localhost}
       RTMP_PORT: 1935
       RTMP_HTTP_PORT: 8000
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      HLS_HOST: ${HLS_HOST:-http://localhost:8000}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     depends_on:
-      - db
-      - rtmp
+      db:
+        condition: service_healthy
+      rtmp:
+        condition: service_started
     ports:
       - "3000:3000"
 

@@ -13,7 +13,9 @@ coverage/
 # Env
 .env
 .env.local
-.env.*
+.env.development
+.env.production
+!.env.example
 
 # Prisma
 **/prisma/*.db
