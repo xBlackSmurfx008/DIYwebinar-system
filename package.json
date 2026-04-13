@@ -16,7 +16,7 @@
     "dev:rtmp": "npm -w services/rtmp run dev",
     "db:generate": "npm -w @platform/db run generate",
     "db:migrate": "npm -w @platform/db run migrate",
-    "build": "npm -w apps/web run build && npm -w services/rtmp run build",
+    "build": "npm run db:generate && npm -w apps/web run build && npm -w services/rtmp run build",
     "start": "npm -w apps/web run start"
   },
   "devDependencies": {

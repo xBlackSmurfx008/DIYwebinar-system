@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { getPrisma } from "@platform/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../lib/auth";
@@ -6,12 +7,19 @@ import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
+type DashboardEvent = Prisma.EventGetPayload<{
+  include: {
+    streamKeys: true;
+    _count: { select: { registrations: true } };
+  };
+}>;
+
 export default async function Page() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
   const prisma = getPrisma();
-  const events = await prisma.event.findMany({
+  const events: DashboardEvent[] = await prisma.event.findMany({
     orderBy: { startAt: "desc" },
     take: 20,
     include: { streamKeys: true, _count: { select: { registrations: true } } },
