@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npx -w packages/db prisma generate && npm -w packages/db run build && npm -w apps/web run build",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "npm ci",
+  "framework": "nextjs",
+  "rootDirectory": "."
+}

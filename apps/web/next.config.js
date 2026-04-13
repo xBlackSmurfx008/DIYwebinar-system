@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@platform/db"],
+  output: "standalone",
 };
 
 module.exports = nextConfig;

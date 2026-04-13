@@ -19,9 +19,7 @@ export default async function WatchPage({ params }: Props) {
 
   if (!event) notFound();
 
-  const hlsHost =
-    process.env.HLS_HOST ||
-    `http://${process.env.RTMP_HOST || "localhost"}:${process.env.RTMP_HTTP_PORT || "8000"}`;
+  const hlsHost = process.env.HLS_HOST || "http://localhost:8000";
 
   return (
     <WatchClient
