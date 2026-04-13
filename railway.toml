@@ -1,0 +1,5 @@
+[build]
+dockerfilePath = "services/rtmp/Dockerfile.railway"
+
+[deploy]
+startCommand = "npm -w services/rtmp run start"
