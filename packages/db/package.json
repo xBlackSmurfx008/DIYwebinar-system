@@ -9,6 +9,8 @@
     "prisma:migrate": "prisma migrate dev --name init",
     "generate": "prisma generate",
     "migrate": "prisma migrate dev --name init",
+    "migrate:deploy": "prisma migrate deploy",
+    "seed": "node prisma/seed.js",
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist"
   },

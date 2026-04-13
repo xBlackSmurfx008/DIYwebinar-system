@@ -18,6 +18,10 @@ RUN npx -w packages/db prisma generate
 RUN npm -w packages/db run build
 RUN npm -w apps/web run build
 
+COPY apps/web/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 3000
 ENV NODE_ENV=production
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "-w", "apps/web", "run", "start"]
